@@ -31,7 +31,8 @@ def main():
 
     elif action == '--delete':
         taskID = sys.argv[2]
-        database.delete_task(database.conn, (taskID,))
+        database.delete_task(database.conn, taskID)
+        database.view_tasks(database.conn)
 
     elif action == '--mark':
         # Create markText variable because I don't know how else to create the tuple
