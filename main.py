@@ -1,10 +1,12 @@
 import sys
 import tododatabaselayer
+import todotask
 
 
 def main():
     databasePath = r"C:\sqlite\db\todo.db"
     database = tododatabaselayer.databaseLayer(databasePath)
+    conn = database.create_connection(databasePath)
 
     script = sys.argv[0]
     if len(sys.argv) == 1:  # no arguments, so print help message
@@ -16,29 +18,34 @@ def main():
     if action == '--new':
         # By default, set complete column to incomplete
         desc = sys.argv[2]
-        task = (desc, 'Incomplete')
-        database.new_task(database.conn, task)       # ???
+        task = todotask.newTask(desc)
+        database.new_task(conn, task)
 
     elif action == '--view':
         # Print rows
-        database.view_tasks(database.conn)
+        printTasks(conn, database)
 
     elif action == '--edit':
         # Take ID to edit and new description
         taskID = sys.argv[2]
         desc = sys.argv[3]
-        database.update_task(database.conn, (desc, taskID,))
+        task = todotask.task(taskID, desc, 0)
+        database.update_task(conn, task)
 
     elif action == '--delete':
         taskID = sys.argv[2]
-        database.delete_task(database.conn, taskID)
-        database.view_tasks(database.conn)
+        database.delete_task(conn, taskID)
+        printTasks(conn, database)
 
     elif action == '--mark':
-        # Create markText variable because I don't know how else to create the tuple
         taskID = sys.argv[2]
-        markText = "Done"
-        database.mark_task_as_done(database.conn, (markText, taskID))
+        database.mark_task_as_done(conn, taskID)
+
+
+def printTasks(conn, database):
+    listOfTasks = database.get_tasks(conn)
+    for task in listOfTasks:
+        print(f"{task.id}, {task.description}, {task.isDone}")
 
 
 if __name__ == '__main__':

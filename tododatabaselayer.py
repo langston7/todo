@@ -1,4 +1,5 @@
 import sqlite3
+import todotask
 from sqlite3 import Error
 
 
@@ -17,31 +18,20 @@ class databaseLayer:
     def new_task(self, conn, task):
         # cursor object https://docs.python.org/2/library/sqlite3.html#sqlite3.Cursor
         sql = ''' INSERT INTO tasks(desc, complete)
-                      VALUES(?,?) '''
+                             VALUES(?,?) '''
         cur = conn.cursor()
-        cur.execute(sql, task)
+        cur.execute(sql, (task.description, task.isDone))
         conn.commit()
-        return cur.lastrowid
 
     def update_task(self, conn, task):
         sql = ''' UPDATE tasks
                   SET desc = ?
                   WHERE id = ?'''
         cur = conn.cursor()
-        cur.execute(sql, task)
+        cur.execute(sql, (task.description, task.id))
         conn.commit()
 
-    def view_tasks(self, conn):
-        cur = conn.cursor()
-        cur.execute("SELECT * FROM tasks")
-        rows = cur.fetchall()
-
-        print(len(rows))
-        for row in rows:
-            print(row)
-
     def delete_task(self, conn, taskID):
-        # Should probably reset taskIDs?  Not sure if that's a smart move
         sql = 'DELETE FROM tasks WHERE id=?'
         cur = conn.cursor()
         cur.execute(sql, taskID)
@@ -49,15 +39,12 @@ class databaseLayer:
 
         self.updateIDs(conn, taskID)
 
-
-        #view_tasks(conn)  < doesn't work
-
-    def mark_task_as_done(self, conn, idAndText):
+    def mark_task_as_done(self, conn, id):
         sql = ''' UPDATE tasks
-                      SET complete = ?
-                      WHERE id = ?'''
+                          SET complete = ?
+                          WHERE id = ?'''
         cur = conn.cursor()
-        cur.execute(sql, idAndText)
+        cur.execute(sql, (1, id))
         conn.commit()
 
     def updateIDs(self, conn, taskID):
@@ -71,3 +58,13 @@ class databaseLayer:
             i += 1
 
         conn.commit()
+
+    def get_tasks(self, conn):
+        cur = conn.cursor()
+        cur.execute("SELECT * FROM tasks")
+        rows = cur.fetchall()
+        listOfTasks = []
+        for row in rows:
+            task = todotask.task(row[0], row[1], row[2])
+            listOfTasks.append(task)
+        return listOfTasks
