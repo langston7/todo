@@ -60,6 +60,7 @@ class databaseLayer:
         conn.commit()
 
     def get_tasks(self, conn):
+        # returns a list of all tasks
         cur = conn.cursor()
         cur.execute("SELECT * FROM tasks")
         rows = cur.fetchall()
